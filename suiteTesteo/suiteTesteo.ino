@@ -3,48 +3,42 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include <WiFi.h>
-//#include <WebServer.h>
 #include <ESPAsyncWebServer.h>
 #include "html.h"
 #include <Arduino_JSON.h>
 #include <math.h>
 
-#define MOTOR_A 12 // Cambia este valor al pin GPIO que estés usando
-#define MOTOR_B 13 // Cambia este valor al pin GPIO que estés usando
-#define MOTOR_C 14 // Cambia este valor al pin GPIO que estés usando
+#define MOTOR_A 12 /
+#define MOTOR_B 13 
+#define MOTOR_C 14 
 
-
-
-// Create an Event Source on /events
+// Crear origen de eventos
 AsyncEventSource events("/events");
 
-// Json Variable to Hold Sensor Readings
-JSONVar readings;
+AsyncWebServer server(80);
+Adafruit_MPU6050 mpu;
 
-// Timer variables
-unsigned long lastTime = 0;  
-unsigned long lastTimeAcc = 0;
-unsigned long gyroDelay = 10;
-unsigned long accelerometerDelay = 200;
+//HOTSPOT 
+const char* ssid = "-------";       
+const char* password = "--------";
 
 float gyroX, gyroY, gyroZ;
 float accX, accY, accZ;
 float temperature;
 
-//Gyroscope sensor deviation
+//Error
 float gyroXerror = 0.07;
 float gyroYerror = 0.1;
 float gyroZerror = 0.01;
 
-
-//****************************************************A
-AsyncWebServer server(80);
-Adafruit_MPU6050 mpu;
-
-const char* ssid = "MIWIFI_xHdm";       
-const char* password = "aQrrvrMn";
+// Variables de tiempo
+unsigned long lastTime = 0;  
+unsigned long lastTimeAcc = 0;
+unsigned long gyroDelay = 10;
+unsigned long accelerometerDelay = 200;
 
 sensors_event_t a, g, temp;
+JSONVar readings;
 
 void setup(void) {
   Serial.begin(115200);
@@ -52,7 +46,6 @@ void setup(void) {
     delay(10);
 
   Serial.println("Adafruit MPU6050 test!");
-
 
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
@@ -62,7 +55,7 @@ void setup(void) {
   }
   Serial.println("MPU6050 Found!");
 
-
+//wifi protocol
   WiFi.mode(WIFI_STA);                  
   WiFi.begin(ssid, password);
    
@@ -78,7 +71,6 @@ void setup(void) {
   Serial.println(WiFi.localIP());      
  
   //server.on("/", MainPage);             
-  //server.on("/readMPU6050", MPU6050html);
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     String _html_page = html_page;              
     request->send(200, "text/html", _html_page);  
@@ -101,17 +93,17 @@ void setup(void) {
 
   //motor inferior izquierdo accionado
   server.on("/InfIz", HTTP_GET, [](AsyncWebServerRequest *request){
-      digitalWrite(MOTOR_B, HIGH); // Enciende el motor solenoide
-      delay(1000); // Espera 1 segundo antes de repetir el ciclo
-      digitalWrite(MOTOR_B, LOW); // Apaga el motor solenoide
+      digitalWrite(MOTOR_B, HIGH); 
+      delay(1000); 
+      digitalWrite(MOTOR_B, LOW); 
     request->send(200, "text/plain", "OK");
   });
 
   //motor inferior derecho accionado
   server.on("/InfDer", HTTP_GET, [](AsyncWebServerRequest *request){
-      digitalWrite(MOTOR_C, HIGH); // Enciende el motor solenoide
-      delay(1000); // Espera 1 segundo antes de repetir el ciclo
-      digitalWrite(MOTOR_C, LOW); // Apaga el motor solenoide
+      digitalWrite(MOTOR_C, HIGH); 
+      delay(1000); 
+      digitalWrite(MOTOR_C, LOW); 
     
     request->send(200, "text/plain", "OK");
   });
@@ -171,22 +163,18 @@ String getAngularRotation(){
 
 String getGyroscope(){
   mpu.getEvent(&a, &g, &temp);
-
   float gyroX_temp = g.gyro.x;
   if(abs(gyroX_temp) > gyroXerror)  {
     gyroX += gyroX_temp/50.00;
   }
-  
   float gyroY_temp = g.gyro.y;
   if(abs(gyroY_temp) > gyroYerror) {
     gyroY += gyroY_temp/200.00;
   }
-
   float gyroZ_temp = g.gyro.z;
   if(abs(gyroZ_temp) > gyroZerror) {
     gyroZ += gyroZ_temp/90.00;
   }
-  
 
   readings["gyroX"] = String(gyroX);
   readings["gyroY"] = String(gyroY);
@@ -200,7 +188,6 @@ String getGyroscope(){
 
 String getAccelerometer() {
   mpu.getEvent(&a, &g, &temp);
-  // Get current acceleration values
   accX = a.acceleration.x;
   accY = a.acceleration.y;
   accZ = a.acceleration.z;
@@ -216,12 +203,11 @@ String getAccelerometer() {
 void loop() {
    mpu.getEvent(&a, &g, &temp);
   if ((millis() - lastTime) > gyroDelay) {
-    // Send Events to the Web Server with the Sensor Readings
+    // manda evento
     events.send(getGyroscope().c_str(),"gyro_readings",millis());
     lastTime = millis();
   }
   if ((millis() - lastTimeAcc) > accelerometerDelay) {
-    // Send Events to the Web Server with the Sensor Readings
     events.send(getAccelerometer().c_str(),"accelerometer_readings",millis());
     events.send(getAngularRotation().c_str(),"combined_reading",millis());
     lastTimeAcc = millis();
