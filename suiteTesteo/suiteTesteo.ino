@@ -52,8 +52,8 @@ AsyncWebServer server(80);
 
 Adafruit_MPU6050 mpu;
 
-const char* ssid = "MIWIFI_xHdm";       
-const char* password = "aQrrvrMn";
+const char* ssid = "WIFI";       
+const char* password = "PASSWD";
 
 sensors_event_t a, g, temp;
 
