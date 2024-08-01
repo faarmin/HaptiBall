@@ -93,7 +93,6 @@ function resetPosition(element){
 
 window.addEventListener('resize', onWindowResize, false);
 
-// Create the 3D representation
 createSceneJS();
 fibonacciAct= false;
 distributePointsOnSphere(6);
@@ -155,7 +154,6 @@ document.getElementById('myCheckbox2').addEventListener('change', function() {
 });
 
 
-// Create events for the sensor readings
 if (!!window.EventSource) {
     var source = new EventSource('/events');
 
@@ -176,7 +174,6 @@ if (!!window.EventSource) {
     document.getElementById("gyroY").innerHTML = obj.gyroY;
     document.getElementById("gyroZ").innerHTML = obj.gyroZ;
 
-    // Change sphere rotation after receiving the readinds
     sphere.rotation.x = obj.gyroY;
     sphere.rotation.y = obj.gyroZ;
     sphere.rotation.z = obj.gyroX;
@@ -246,7 +243,6 @@ function createVectors() {
   const cylinderRadius = 0.025 ; // Radius of the cylinder
   const vectorLength = radius;
 
-  // Create the 6 vectors
   const directions = [
       new THREE.Vector3(0, 1, 0), 
       new THREE.Vector3(0, -1, 0), 
@@ -281,7 +277,6 @@ function updateHitVector() {
     const origin = new THREE.Vector3(0, 0, 0);
     const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
 
-    // If hitArrowHelper exists, remove it from the scene
     if (hitArrowHelper) {
       scene.remove(hitArrowHelper);
     }
