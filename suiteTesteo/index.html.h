@@ -14,8 +14,8 @@ STRINGIFY(
         <h1>Hapti-Ball Testing Suite</h1>
         <input type="checkbox" id="myCheckbox">
         <label for="myCheckbox">Fibonacci Lattice Distribution</label></br>
-                <input type="checkbox" id="myCheckbox2">
-                <label for="myCheckbox2">Regular Distribution</label></br>
+        <input type="checkbox" id="myCheckbox2">
+        <label for="myCheckbox2">Regular Distribution</label></br>
     </div>
     <div class="content">
             <div class="cube-content">
@@ -54,9 +54,9 @@ STRINGIFY(
             <div class="card">
                 <p class="card-title">IMPACT VECTOR</p>
                 <div id="vectorHit">
-                  X:<input type="number" id="hitX" length="2" value="3" /> </br>
-                  Y:<input type="number" id="hitY" length="3" value="2" /> </br>
-                  Z:<input type="number" id="hitZ" length="3" value="-4" /> </br></br>
+                  X<input type="range" id="hitX" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitX">5</span></br>
+                  Y<input type="range" id="hitY" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitY">5</span></br>
+                  Z<input type="range" id="hitZ" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitZ">5</span></br></br>
 
                   <button id="updateHitVector">updateHitVector</button></br></br>
                   <button id="launch" onclick="animateVectorsToNewCoordinates()">LAUNCH</button>
@@ -69,27 +69,27 @@ STRINGIFY(
                 </br>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="Sup" onclick="accionarMotorX(Sup)">Motor Superior </button> 
-                    <input type="range" id="slider1" min="0" max="255" value="155" /> <span class="fixed-width-span" id="numPower1">155</span> power
+                    <input type="range" id="slider1" min="0" max="10" value="10" /> <span class="fixed-width-span" id="numPower1">10</span> power
                 </div>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="mNorte"  onclick="accionarMotorX(mNorte)">Motor Central 1</button>
-                    <input type="range" id="slider2" min="0" max="255" value="155" /><span class="fixed-width-span" id="numPower2">155</span> power
+                    <input type="range" id="slider2" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower2">10</span> power
                 </div>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="mSur"  onclick="accionarMotorX(mSur)">Motor Central 2</button>
-                    <input type="range" id="slider3" min="0" max="255" value="155" /><span class="fixed-width-span" id="numPower3">155</span> power</br>
+                    <input type="range" id="slider3" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower3">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="mEste"  onclick="accionarMotorX(mEste)">Motor Central 3</button>
-                    <input type="range" id="slider4" min="0" max="255" value="155" /><span class="fixed-width-span" id="numPower4">155</span> power</br>
+                    <input type="range" id="slider4" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower4">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="mOeste"  onclick="accionarMotorX(mOeste)">Motor Central 4</button>
-                    <input type="range" id="slider5" min="0" max="255" value="155" /><span class="fixed-width-span" id="numPower5">155</span> power</br>
+                    <input type="range" id="slider5" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower5">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
                     <button class="base-btn" id="Inf"  onclick="accionarMotorX(Inf)">Motor Inferior</button>
-                    <input type="range" id="slider6" min="0" max="255" value="155" /><span class="fixed-width-span" id="numPower6">155</span> power</br>
+                    <input type="range" id="slider6" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower6">10</span> power</br>
                 </div>
 
             </div>

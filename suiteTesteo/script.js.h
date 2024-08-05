@@ -3,7 +3,8 @@ R"=====(
 //Variables 
 let scene, camera, rendered, sphere, hitArrowHelper,arrowHelpersGroup,pointsGroup,slider,cylinderHelpersGroup;
 let numPower1,numPower2,numPower3,numPower4,numPower5,numPower6;
-let fibonacciAct,regAct;
+let numHitX,numHitY,numHitZ;
+let fibonacciAct,regAct,loopCheck;
 const vectors = [];
 const directions = [];
 
@@ -93,8 +94,9 @@ function resetPosition(element){
 
 window.addEventListener('resize', onWindowResize, false);
 
+// Create the 3D representation
 createSceneJS();
-fibonacciAct= false;
+fibonacciAct= true;
 distributePointsOnSphere(6);
 createVectors();
 
@@ -137,6 +139,27 @@ slider6.oninput = function () {
   numPower6.textContent = n;
 };
 
+hitX = document.getElementById("hitX");
+hitY = document.getElementById("hitY");
+hitZ = document.getElementById("hitZ");
+numHitX = document.getElementById("numHitX");
+numHitY = document.getElementById("numHitY");
+numHitZ = document.getElementById("numHitZ");
+
+hitX.oninput = function () {
+  const n = parseInt(this.value);
+  numHitX.textContent = n;
+};
+
+hitY.oninput = function () {
+  const n = parseInt(this.value);
+  numHitY.textContent = n;
+};
+
+hitZ.oninput = function () {
+  const n = parseInt(this.value);
+  numHitZ.textContent = n;
+};
 
 //*****************************LISTENERS*********************
 document.getElementById('myCheckbox').addEventListener('change', function() {
@@ -153,7 +176,12 @@ document.getElementById('myCheckbox2').addEventListener('change', function() {
     console.log('Checkbox activado:', regAct);
 });
 
+document.getElementById('loopCheck').addEventListener('change', function() {
+    loopCheck = this.checked;
+    console.log('Checkbox activado:', loopCheck);
+});
 
+// Create events for the sensor readings
 if (!!window.EventSource) {
     var source = new EventSource('/events');
 
@@ -174,6 +202,7 @@ if (!!window.EventSource) {
     document.getElementById("gyroY").innerHTML = obj.gyroY;
     document.getElementById("gyroZ").innerHTML = obj.gyroZ;
 
+    // Change sphere rotation after receiving the readinds
     sphere.rotation.x = obj.gyroY;
     sphere.rotation.y = obj.gyroZ;
     sphere.rotation.z = obj.gyroX;
@@ -243,6 +272,7 @@ function createVectors() {
   const cylinderRadius = 0.025 ; // Radius of the cylinder
   const vectorLength = radius;
 
+  // Create the 6 vectors
   const directions = [
       new THREE.Vector3(0, 1, 0), 
       new THREE.Vector3(0, -1, 0), 
@@ -270,13 +300,17 @@ function createVectors() {
 
 //Crea nuevo vector de impacto
 function updateHitVector() {
-    const hitX = parseFloat(document.getElementById("hitX").value);
-    const hitY = parseFloat(document.getElementById("hitY").value);
-    const hitZ = parseFloat(document.getElementById("hitZ").value);
-    const hitPoint = new THREE.Vector3(hitX, hitY, hitZ);
+  
+    const valX = parseInt(hitX.value, 10)*(-1);
+    const valY = parseInt(hitY.value, 10)*(-1);
+    const valZ = parseInt(hitZ.value, 10)*(-1);
+    console.log(valX,valY,valZ);
+
+    const hitPoint = new THREE.Vector3(valX, valY, valZ);
     const origin = new THREE.Vector3(0, 0, 0);
     const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
 
+    // If hitArrowHelper exists, remove it from the scene
     if (hitArrowHelper) {
       scene.remove(hitArrowHelper);
     }
@@ -325,6 +359,8 @@ function updateHitVector() {
     xhr.send();
 }
 
+
+
 //**********************************PRUEBAS******************************************************
 
   function launch(values){
@@ -343,21 +379,21 @@ function getMotorValues(x, y, z) {
     launch(values);
 }
 
-}
+
 
 function animateVectorsToNewCoordinates() {
     console.log('LAUNCH');
-    const hitX = parseFloat(document.getElementById("hitX").value);
-    const hitY = parseFloat(document.getElementById("hitY").value);
-    const hitZ = parseFloat(document.getElementById("hitZ").value);
+    const valX = parseInt(hitX.value, 10)*(-1);
+    const valY = parseInt(hitY.value, 10)*(-1);
+    const valZ = parseInt(hitZ.value, 10)*(-1);
 
-    const x = hitX;
-    const y = hitY;
-    const z = hitZ;
+    const x = valX;
+    const y = valY;
+    const z = valZ;
 
     //Enviar señal al esp32
-    //getMotorValues(x,y,z);
-
+    activateMotores(x,y,z);
+    
     const components = [
         new THREE.Vector3(x, 0, 0),
         new THREE.Vector3(0, y, 0),
@@ -395,5 +431,73 @@ function animateVectorsToNewCoordinates() {
 
     });
 }
+
+function activateMotores(valX,valY,valZ){
+    
+    const sup = 0;
+    const inf= 0;
+    const norte= 0;
+    const este= 0;
+    const oeste= 0;
+    const sur= 0;
+    const values=[];
+
+    var xhr = new XMLHttpRequest();
+    //If look check is deactivated
+    if(loopCheck){
+      //launch con periodicidad
+      xhr.open("GET", "/launch"+"?values=" + values+ "?sleep=" + sleep, true);
+    }
+    //launch sin periodicidad
+    else{
+      if (valY>0){
+          sup = valY;
+      }
+      else{
+          inf = valY;
+      }
+      if (valX>0){
+          norte = valX;
+      }
+      else{
+          sur = valX;
+      } 
+      if (valZ>0){
+          este = valZ;
+      }
+      else{
+          oeste = valZ;
+      } 
+      values=[sup,inf,norte,sur,este,oeste];
+      //launch values;
+      xhr.open("GET", "/launch"+"?values=" + values, true);
+      console.log(element.id+number);
+      xhr.send();
+    }
+    
+}
+
+/*
+function activateLaunch(){
+    const valX = parseInt(hitX.value, 10)*(-1);
+    const valY = parseInt(hitY.value, 10)*(-1);
+    const valZ = parseInt(hitZ.value, 10)*(-1);
+
+    const hitPoint = new THREE.Vector3(valX, valY, valZ);
+    const origin = new THREE.Vector3(0, 0, 0);
+    const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
+    const normalizedImpact = direction.clone().normalize();
+    const projections = referenceVectors.map(vec => normalizedImpact.dot(vec)); //proyección 
+    const values = projections.map(proj => Math.max(0, Math.min(255, Math.round(proj * 255))));
+    //launch(values);
+    for (let i = 0; i < vectors.length; i++) {
+      const cylinder = vectors[i];
+      const value = values[i];
+      const scale = value / 255;
+      cylinder.scale.set(1, scale, 1);
+      const color = new THREE.Color(`rgb(${value}, 0, 0)`);
+      cylinder.material.color.set(color);
+  }
+}*/
 
 )=====";
