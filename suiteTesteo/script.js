@@ -37,9 +37,15 @@ function createSceneJS() {
   console.log("Entra a createSceneJS");
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0xffffff); //iÑIGO: Cambio fondo de escnea a negro
 
-  // camera = new THREE.PerspectiveCamera(75, parentWidth(document.getElementById("3Dcube")) / parentHeight(document.getElementById("3Dcube")), 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(
+    75,
+    parentWidth(document.getElementById("3Dcube")) /
+      parentHeight(document.getElementById("3Dcube")),
+    0.1,
+    1000
+  );
   // Iñigo: Reemplazo la camara por una ortográfica
   let width = parentWidth(document.getElementById("3Dcube"));
   let height = parentHeight(document.getElementById("3Dcube"));
@@ -669,9 +675,9 @@ function hitDecomposition() {
   const lengthZ = hitVector.dot(zAxis); // Magnitud real de la componente Z
 
   // Visualizo las componentes
-  visualizeComponent(compX, lengthX, 0xff0000);
-  visualizeComponent(compY, lengthY, 0x00ff00);
-  visualizeComponent(compZ, lengthZ, 0x0000ff);
+  visualizeComponent(compX, lengthX, 0xd43fbe);
+  visualizeComponent(compY, lengthY, 0xd43fbe);
+  visualizeComponent(compZ, lengthZ, 0xd43fbe);
 
   // Fuerzo el redibujado, por si estaba parado el renderer
   renderer.render(scene, camera);
