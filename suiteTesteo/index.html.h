@@ -1,4 +1,4 @@
-STRINGIFY(
+R"=====(
 <!DOCTYPE HTML>
 <html>
 
@@ -10,7 +10,7 @@ STRINGIFY(
 </head>
 
 <body>
-    <div class="topnav">
+    <div class="banner">
         <h1>Hapti-Ball Testing Suite</h1>
         <input type="checkbox" id="myCheckbox">
         <label for="myCheckbox">Fibonacci Lattice Distribution</label></br>
@@ -43,13 +43,15 @@ STRINGIFY(
                     <span class="reading">-><span id="angYrad"></span> radianes</sup></span>
                 </p>
                   </BR></BR>
-                <button id="reset" onclick="resetPosition(this)">RESET POSITION</button>
+                <button id="reset">RESET POSITION </button>
 
             </div>
               <div class="card">
-                  <p class="card-title">PERIODICITY</p>
-                  LOOP <input type="checkbox" id="loopCheck"></br></br>
-                  Sleep time:<input type="number" id="sleep" length="2" value="3" /> </br>
+                  <p class="card-title">CUSTOM HIT</p>
+                  ACTIVATE <input type="checkbox" id="configureHit"></br></br>
+                  Repetitions:<input type="number" id="reps" length="2" value="3" /> </br></br>
+                  Active time:<input type="number" id="actTime" length="3" value="30" /> </br></br>
+                  Time between hits:<input type="number" id="waitTime" length="2" value="50" /> </br>
             </div>
             <div class="card">
                 <p class="card-title">IMPACT VECTOR</p>
@@ -57,9 +59,10 @@ STRINGIFY(
                   X<input type="range" id="hitX" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitX">5</span></br>
                   Y<input type="range" id="hitY" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitY">5</span></br>
                   Z<input type="range" id="hitZ" min="-10" max="10" value="5" /><span class="fixed-width-span" id="numHitZ">5</span></br></br>
-
-                  <button id="updateHitVector">updateHitVector</button></br></br>
-                  <button id="launch" onclick="animateVectorsToNewCoordinates()">LAUNCH</button>
+                  <button id="hitBtn">SIMULATE HIT</button></br></br>
+                  <button id="launch">LAUNCH MOTORS</button></br></br>
+                  <button id="hideVectorsBtn">CLEAN</button></br>
+                  
 
                 </div>
             </div>
@@ -68,39 +71,47 @@ STRINGIFY(
                 
                 </br>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="Sup" onclick="accionarMotorX(Sup)">Motor Superior </button> 
+                    <button class="base-btn" id="Sup">MOTOR SUPERIOR </button> 
                     <input type="range" id="slider1" min="0" max="10" value="10" /> <span class="fixed-width-span" id="numPower1">10</span> power
                 </div>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="mNorte"  onclick="accionarMotorX(mNorte)">Motor Central 1</button>
+                    <button class="base-btn" id="mNorte">MOTOR NORTE </button>
                     <input type="range" id="slider2" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower2">10</span> power
                 </div>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="mSur"  onclick="accionarMotorX(mSur)">Motor Central 2</button>
+                    <button class="base-btn" id="mSur" >MOTOR SUR</button>
                     <input type="range" id="slider3" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower3">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="mEste"  onclick="accionarMotorX(mEste)">Motor Central 3</button>
+                    <button class="base-btn" id="mEste" >MOTOR ESTE</button>
                     <input type="range" id="slider4" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower4">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="mOeste"  onclick="accionarMotorX(mOeste)">Motor Central 4</button>
+                    <button class="base-btn" id="mOeste">MOTOR OESTE</button>
                     <input type="range" id="slider5" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower5">10</span> power</br>
                 </div>
                 <div class="button-slider-pair">
-                    <button class="base-btn" id="Inf"  onclick="accionarMotorX(Inf)">Motor Inferior</button>
+                    <button class="base-btn" id="Inf" >MOTOR INFERIOR </button>
                     <input type="range" id="slider6" min="0" max="10" value="10" /><span class="fixed-width-span" id="numPower6">10</span> power</br>
                 </div>
 
             </div>
 
     </div>
-
 </body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
-<script src="script.js"></script>
+
+<script type="importmap">
+    {
+        "imports": {
+          "three": "https://unpkg.com/three@0.155.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.155.0/examples/jsm/",
+          "dat.gui": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js"
+        }
+    }
+    </script>
+
+<script  type="module" defer  src="script.js"></script>
+
 </html>
 
-)
+)=====";

@@ -1,11 +1,49 @@
 R"=====(
 
-//Variables 
-let scene, camera, rendered, sphere, hitArrowHelper,arrowHelpersGroup,pointsGroup,slider,cylinderHelpersGroup;
-let numPower1,numPower2,numPower3,numPower4,numPower5,numPower6;
-let numHitX,numHitY,numHitZ;
-let fibonacciAct,regAct,loopCheck;
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+//Variables escena
+var scene,
+  camera,
+  renderer,
+  sphere,
+  hitArrowHelper,
+  arrowHelpersGroup,
+  pointsGroup,
+  slider,
+  cylinderHelpersGroup;
+//Variables sliders
+var numPower1,
+  numPower2, 
+  numPower3, 
+  numPower4, 
+  numPower5, 
+  numPower6,
+  slider1,
+  slider2,
+  slider3,
+  slider4,
+  slider5,
+  slider6;
+var repsInput,
+  actTime,
+  waitTime;
+var numHitX, 
+  numHitY, 
+  numHitZ,
+  hitX,
+  hitY,
+  hitZ;
+//Checks 
+var fibonacciAct, 
+  regAct, 
+  configureHit;
+//Los controles son globales 
+var controls; 
+//Arrays
 const vectors = [];
+var decomposedVectors = [];
 const directions = [];
 
 
@@ -27,21 +65,43 @@ function createSceneJS(){
     console.log('Entra a createSceneJS');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color("black");
 
-    camera = new THREE.PerspectiveCamera(75, parentWidth(document.getElementById("3Dcube")) / parentHeight(document.getElementById("3Dcube")), 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(
+    75,
+    parentWidth(document.getElementById("3Dcube")) /
+      parentHeight(document.getElementById("3Dcube")),
+    0.1,
+    1000
+  );
 
+   // Iñigo: Reemplazo la camara por una ortográfica
+  let width = parentWidth(document.getElementById("3Dcube"));
+  let height = parentHeight(document.getElementById("3Dcube"));
+  let sizeRatio = width / height; // mantengo el ratio de aspecto que tenia en pantalla
+  let desiredWith = 30;
+  camera = new THREE.OrthographicCamera(
+    -desiredWith / 2,
+    desiredWith / 2,
+    desiredWith / sizeRatio / 2,
+    desiredWith / sizeRatio / -2,
+    0,
+    1000
+  );
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(parentWidth(document.getElementById("3Dcube")), parentHeight(document.getElementById("3Dcube")));
 
     document.getElementById('3Dcube').appendChild(renderer.domElement);
+    // Iñigo: añado orbit controls
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.update();
 
     // Crear la geometría
     const sphereGeometry = new THREE.SphereGeometry(2.5, 32, 32);
     const sphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0x03045e,
+      color: 0x8a8bed, // Iñigo: Cambio el color de la esfera a uno mas sauve que permita ver los ejes de su interior
       wireframe: true,
-      opacity: 0.1,
+      opacity: 0.025,
       transparent: false,
     });
 
@@ -64,9 +124,13 @@ function createSceneJS(){
     cylinderHelpersGroup = new THREE.Group();
     sphere.add(cylinderHelpersGroup);
 
-    camera.position.z = 5;
-    renderer.render(scene, camera);
-    console.log(sphere.radius);
+  camera.position.x = 11; // Iñigo: alejo la camara lo suficiente para ver los valores máximos
+  camera.position.y = 11; // Iñigo: alejo la camara lo suficiente para ver los valores máximos
+  camera.position.z = 11; // Iñigo: alejo la camara lo suficiente para ver los valores máximos
+  controls.update(); // Iñigo: Añado update de los controles
+  renderer.render(scene, camera);
+
+
     console.log('Sale createSceneJS');
 }
 
@@ -80,13 +144,12 @@ function onWindowResize(){
 }
 
 //Reset de la esfera (posicion inicial vertical)
-function resetPosition(element){
+function resetPosition(){
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", "/"+element.id, true);
-    console.log(element.id);
+    xhr.open("GET", "/reset", true);
+    console.log();
     xhr.send();
 }
-
 
 /************************************************************************************************************************
 *************************************************************************************************************************
@@ -96,9 +159,10 @@ window.addEventListener('resize', onWindowResize, false);
 
 // Create the 3D representation
 createSceneJS();
-fibonacciAct= true;
-distributePointsOnSphere(6);
-createVectors();
+fibonacciAct= false;
+regAct = false;
+
+
 
 //***********************DOCUMENT GETTERS********************
 slider1 = document.getElementById("slider1");
@@ -107,6 +171,9 @@ slider3 = document.getElementById("slider3");
 slider4 = document.getElementById("slider4");
 slider5 = document.getElementById("slider5");
 slider6 = document.getElementById("slider6");
+
+
+
 numPower1 = document.getElementById("numPower1");
 numPower2 = document.getElementById("numPower2");
 numPower3 = document.getElementById("numPower3");
@@ -146,6 +213,10 @@ numHitX = document.getElementById("numHitX");
 numHitY = document.getElementById("numHitY");
 numHitZ = document.getElementById("numHitZ");
 
+repsInput = document.getElementById("reps").value;
+waitTime = document.getElementById("waitTime").value;
+actTime = document.getElementById("actTime").value;
+
 hitX.oninput = function () {
   const n = parseInt(this.value);
   numHitX.textContent = n;
@@ -161,11 +232,48 @@ hitZ.oninput = function () {
   numHitZ.textContent = n;
 };
 
+
+
 //*****************************LISTENERS*********************
+document.getElementById('reset').addEventListener('click', resetPosition);
+
+document.getElementById("Sup").addEventListener('click', function() {
+    accionarMotorX('Sup');
+});
+
+document.getElementById("mNorte").addEventListener('click', function() {
+    accionarMotorX('mNorte');
+});
+
+document.getElementById("mSur").addEventListener('click', function() {
+    accionarMotorX('mSur');
+});
+
+document.getElementById("mEste").addEventListener('click', function() {
+    accionarMotorX('mEste');
+});
+
+document.getElementById("mOeste").addEventListener('click', function() {
+    accionarMotorX('mOeste');
+});
+
+document.getElementById("Inf").addEventListener('click', function() {
+    accionarMotorX('Inf');
+});
+
+document.getElementById("hitBtn").addEventListener("click", hitDecomposition);
+
+document.getElementById("launch").addEventListener("click", activateMotores);
+
+document.getElementById("hideVectorsBtn").addEventListener('click', hideVectors);
+
 document.getElementById('myCheckbox').addEventListener('change', function() {
     fibonacciAct = this.checked;
     arrowHelpersGroup.visible = fibonacciAct;
     pointsGroup.visible = fibonacciAct;
+    if(fibonacciAct){
+      distributePointsOnSphere(6);
+    }   
     console.log('Checkbox activado:', fibonacciAct);
 });
 
@@ -173,13 +281,42 @@ document.getElementById('myCheckbox2').addEventListener('change', function() {
     regAct = this.checked;
     cylinderHelpersGroup.visible = regAct;
     pointsGroup.visible = regAct;
+    if (regAct){
+      createVectors();
+    }
     console.log('Checkbox activado:', regAct);
+
 });
 
-document.getElementById('loopCheck').addEventListener('change', function() {
-    loopCheck = this.checked;
-    console.log('Checkbox activado:', loopCheck);
+document.getElementById('configureHit').addEventListener('change', function() {
+    configureHit = this.checked;
+    console.log('Checkbox activado:', configureHit);
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  //Update Sliders
+  let hitXSlider = document.getElementById("hitX");
+  let hitXnum = document.getElementById("numHitX");
+  hitXSlider.addEventListener("input", () => {
+    hitXnum.innerHTML = hitX.value;
+    updateHitVector();
+  });
+
+  let hitYSlider = document.getElementById("hitY");
+  let hitYnum = document.getElementById("numHitY");
+  hitYSlider.addEventListener("input", () => {
+    hitYnum.innerHTML = hitY.value;
+    updateHitVector();
+  });
+
+  let hitZSlider = document.getElementById("hitZ");
+  let hitZnum = document.getElementById("numHitZ");
+  hitZSlider.addEventListener("input", () => {
+    hitZnum.innerHTML = hitZ.value;
+    updateHitVector();
+  });
+});
+
 
 // Create events for the sensor readings
 if (!!window.EventSource) {
@@ -268,6 +405,7 @@ function distributePointsOnSphere(n) {
 
 //Crea vectores ortogonales
 function createVectors() {
+  //[HACER QUE SEA SI SE ACTIVA LA VARIABLE]
   const radius = 2.5; // Radius of the sphere
   const cylinderRadius = 0.025 ; // Radius of the cylinder
   const vectorLength = radius;
@@ -296,208 +434,212 @@ function createVectors() {
       cylinderHelpersGroup.add(cylinder);
       vectors.push(cylinder);
   }
+
+
 }
 
 //Crea nuevo vector de impacto
 function updateHitVector() {
-  
-    const valX = parseInt(hitX.value, 10)*(-1);
-    const valY = parseInt(hitY.value, 10)*(-1);
-    const valZ = parseInt(hitZ.value, 10)*(-1);
-    console.log(valX,valY,valZ);
+  const valX = parseInt(hitX.value, 10)*(-1);
+  const valY = parseInt(hitY.value, 10)*(-1);
+  const valZ = parseInt(hitZ.value, 10)*(-1);
+  //console.log(valX,valY,valZ);
 
-    const hitPoint = new THREE.Vector3(valX, valY, valZ);
-    const origin = new THREE.Vector3(0, 0, 0);
-    const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
+  const hitPoint = new THREE.Vector3(valX, valY, valZ);
+  const origin = new THREE.Vector3(0, 0, 0);
+  const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
 
-    // If hitArrowHelper exists, remove it from the scene
-    if (hitArrowHelper) {
-      scene.remove(hitArrowHelper);
-    }
-
-    hitArrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      hitPoint.distanceTo(origin),
-      0xffff00
-    );
-    hitArrowHelper.userData = { dirVector: hitPoint};
-    scene.add(hitArrowHelper);
+  // If hitArrowHelper exists, remove it from the scene
+  if (hitArrowHelper) { 
+    scene.remove(hitArrowHelper);
   }
-  updateHitVector();
-  document.getElementById("updateHitVector").addEventListener("click", updateHitVector);
+
+  hitArrowHelper = new THREE.ArrowHelper(
+    direction,
+    origin,
+    hitPoint.distanceTo(origin),
+    0xffff00
+  );
+  hitArrowHelper.userData = { dirVector: hitPoint};
+  scene.add(hitArrowHelper);
+}
 
 
-  function accionarMotorX(element){
-    var xhr = new XMLHttpRequest();
-    let number;
-    switch (element.id) {
-        case 'Sup':
-            number = numPower1.textContent;
-            break;
-        case 'mNorte':
-            number = numPower2.textContent;
-            break;
-        case 'mSur':
-            number = numPower3.textContent;
-            break;
-        case 'mEste':
-            number = numPower4.textContent;
-            break;
-        case 'mOeste':
-            number = numPower5.textContent;
-            break;
-        case 'Inf':
-            number = numPower6.textContent;
-            break;
-        default:
-            Serial.println("Solenoide inválido");
-            break;
-    }
-    xhr.open("GET", "/"+element.id+ "?number=" + number, true);
-    console.log(element.id+number);
-    xhr.send();
+function accionarMotorX(motor){
+  var xhr = new XMLHttpRequest();
+  let number;
+  switch (motor) {
+      case 'Sup':
+          number = numPower1.textContent;
+          break;
+      case 'mNorte':
+          number = numPower2.textContent;
+          break;
+      case 'mSur':
+          number = numPower3.textContent;
+          break;
+      case 'mEste':
+          number = numPower4.textContent;
+          break;
+      case 'mOeste':
+          number = numPower5.textContent;
+          break;
+      case 'Inf':
+          number = numPower6.textContent;
+          break;
+  }
+  xhr.open("GET", "/"+motor+ "?number=" + number, true);
+  console.log(motor+number);
+  xhr.send();
 }
 
 
 
 //**********************************PRUEBAS******************************************************
 
-  function launch(values){
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "/launch"+"?values=" + values, true);
-    console.log(element.id+number);
-    xhr.send();
-}
-
-function getMotorValues(x, y, z) {
-    const impactVector = new THREE.Vector3(x, y, z).normalize();
-    const projections = referenceVectors.map(vec => impactVector.dot(vec));
-    //Convertir las proyecciones en valores de 0 a 255
-    const values = projections.map(proj => Math.max(0, Math.min(255, Math.round(proj * 255))));
-
-    launch(values);
-}
-
-
-
-function animateVectorsToNewCoordinates() {
-    console.log('LAUNCH');
-    const valX = parseInt(hitX.value, 10)*(-1);
-    const valY = parseInt(hitY.value, 10)*(-1);
-    const valZ = parseInt(hitZ.value, 10)*(-1);
-
-    const x = valX;
-    const y = valY;
-    const z = valZ;
-
-    //Enviar señal al esp32
-    activateMotores(x,y,z);
-    
-    const components = [
-        new THREE.Vector3(x, 0, 0),
-        new THREE.Vector3(0, y, 0),
-        new THREE.Vector3(0, 0, z)
-    ];
-
-    components.forEach((component, index) => {
-        const targetLength = component.length();
-        console.log('target length'+ targetLength);
-        const scaleFactor = targetLength / 2.5;
-        console.log('scaleFactor'+ scaleFactor);
-    
-        let vector;
-        if (index === 0) { // X direction
-            if (x >= 0) {
-                vector = vectors[0];
-            } else {
-                vector = vectors[1];
-            }
-        } else if (index === 1) { // Y direction
-            if (y >= 0) {
-                vector = vectors[2];
-            } else {
-                vector = vectors[3];
-            }
-        } else if (index === 2) { // Z direction
-            if (z >= 0) {
-                vector = vectors[4];
-            } else {
-                vector = vectors[5];
-            }
-        }
-
-        vector.scale.set(scaleFactor, 1, 1);
-
-    });
-}
-
-function activateMotores(valX,valY,valZ){
-    
-    const sup = 0;
-    const inf= 0;
-    const norte= 0;
-    const este= 0;
-    const oeste= 0;
-    const sur= 0;
-    const values=[];
+ 
+function activateMotores(){
+    const valX = parseInt(hitX.value);
+    const valY = parseInt(hitY.value);
+    const valZ = parseInt(hitZ.value);
+    let  sup = 0;
+    let  inf= 0;
+    let  norte= 0;
+    let  este= 0;
+    let  oeste= 0;
+    let  sur= 0;
+    let  values = [];
 
     var xhr = new XMLHttpRequest();
-    //If look check is deactivated
-    if(loopCheck){
-      //launch con periodicidad
-      xhr.open("GET", "/launch"+"?values=" + values+ "?sleep=" + sleep, true);
-    }
-    //launch sin periodicidad
-    else{
       if (valY>0){
           sup = valY;
       }
       else{
-          inf = valY;
+          inf = valY*(-1);
       }
       if (valX>0){
           norte = valX;
       }
       else{
-          sur = valX;
+          sur = valX*(-1);
       } 
       if (valZ>0){
           este = valZ;
       }
       else{
-          oeste = valZ;
+          oeste = valZ*(-1);
       } 
       values=[sup,inf,norte,sur,este,oeste];
-      //launch values;
+
+      console.log(values);
+
+    if(configureHit){
+      //launch con periodicidad
+      console.log("WAITTIME: "+waitTime+" ACTTIME: "+actTime+ " REPETITIONS: "+repsInput);
+      xhr.open("GET", "/customLaunch?values=" + values + "&actTime=" + actTime + "&waitTime=" + waitTime + "&repsInput=" + repsInput, true);
+      xhr.send();
+    }
+    else{
       xhr.open("GET", "/launch"+"?values=" + values, true);
-      console.log(element.id+number);
       xhr.send();
     }
     
 }
 
-/*
-function activateLaunch(){
-    const valX = parseInt(hitX.value, 10)*(-1);
-    const valY = parseInt(hitY.value, 10)*(-1);
-    const valZ = parseInt(hitZ.value, 10)*(-1);
+function hideVectors() {
+    decomposedVectors.forEach(vector => {
+        vector.visible = false;
+        vector.opacity = 0;
+        scene.remove(vector); 
+    });
+    console.log(decomposedVectors+"eliminados");
+    decomposedVectors = [];
+    renderer.render(scene, camera);
+}
 
-    const hitPoint = new THREE.Vector3(valX, valY, valZ);
-    const origin = new THREE.Vector3(0, 0, 0);
-    const direction = new THREE.Vector3().subVectors(origin, hitPoint).normalize();
-    const normalizedImpact = direction.clone().normalize();
-    const projections = referenceVectors.map(vec => normalizedImpact.dot(vec)); //proyección 
-    const values = projections.map(proj => Math.max(0, Math.min(255, Math.round(proj * 255))));
-    //launch(values);
-    for (let i = 0; i < vectors.length; i++) {
-      const cylinder = vectors[i];
-      const value = values[i];
-      const scale = value / 255;
-      cylinder.scale.set(1, scale, 1);
-      const color = new THREE.Color(`rgb(${value}, 0, 0)`);
-      cylinder.material.color.set(color);
+//******* AÑADIDOS DE IÑIGO    *********/
+// He cambiado a sistema de modulos para pode rimprotar orbit contorls
+// Importo orbitcontrols
+// He cambiado muchas variables a globales para poder acceder a ellas desde cualquier parte
+// He cambiado color de esfera a uno más suave para poder ver los ejes de su interior
+// cambio a orthographic camera (https://threejs.org/docs/#api/en/cameras/OrthographicCamera)
+
+
+// Añado ejes de ayuda dentro de la esfera (en lugar de cilindros). Necesito esta referencia visual para conocer el eje de coordenadas local de la esfera conforme rota.
+// Representan los solenoides.
+const solenoidsAxesHelper = new THREE.AxesHelper(1);
+sphere.add(solenoidsAxesHelper);
+
+// añado tambien ejes generales de referencia de toda la escena
+const sceneAxesHelper = new THREE.AxesHelper(10); // 10 veces mas largos, para diferenciarlos
+sceneAxesHelper.setColors(0xfaafaf, 0xa1ffa1, 0xc4ddff); // Con colores mas sauves para diferenciarlos aun mejor
+scene.add(sceneAxesHelper);
+
+
+// Función que se encarga de descomponer y dibujar el hit
+function hitDecomposition() {
+  // Recibe un vector con magnitud y un color, dibuja un arrowHelper que lo visualiza en escena.
+  function visualizeComponent(vector, length, color) {
+    vector = vector.negate();
+    const arrowHelper = new THREE.ArrowHelper(
+      vector.normalize(), // Dirección normalizada
+      new THREE.Vector3(0, 0, 0), // Punto de origen
+      Math.abs(length), // Longitud/magnitud. Siempre absoluta, queremos distancias positivas sea cual sea su dirección
+      color, // Color
+      0.2, // Tamaño de la cabeza
+      0.1 // Tamaño de la cabeza
+    );
+    scene.add(arrowHelper);
+    console.log(decomposedVectors+"+1");
   }
-}*/
+
+  // Obtengo la "world matrix" del solenoidsAxesHelper, la necesitaré para usarlo como base de la decomposición
+  const axesHelperWorldMatrix = solenoidsAxesHelper.matrixWorld;
+
+  // Extract the basis vectors (X, Y, Z) from the matrix
+  const xAxis = new THREE.Vector3();
+  const yAxis = new THREE.Vector3();
+  const zAxis = new THREE.Vector3();
+  axesHelperWorldMatrix.extractBasis(xAxis, yAxis, zAxis);
+
+
+  // Construyo el vector de impacto a partir de los valores del hit input
+  const hitPoint = new THREE.Vector3(
+    parseInt(hitX.value),
+    parseInt(hitY.value),
+    parseInt(hitZ.value)
+  );
+  const origin = new THREE.Vector3(0, 0, 0);
+  const direction = new THREE.Vector3()
+    .subVectors(origin, hitPoint)
+    .normalize(); //normalizado, la magnitud se la doy ahora justo después
+  const hitArrowLength = hitPoint.distanceTo(origin); // la magnitud/longitud es la distancia al origen 0,0,0
+  const hitVector = direction.clone().multiplyScalar(hitArrowLength);
+
+  // Clono el vector de impacto para poder proyectarlo sobre los 3 ejes (internos de la esfera, corresponoden a solenoides)
+  let compX = hitVector.clone().projectOnVector(xAxis);
+  let compY = hitVector.clone().projectOnVector(yAxis);
+  let compZ = hitVector.clone().projectOnVector(zAxis);
+  decomposedVectors.push(compX);
+  decomposedVectors.push(compY);
+  decomposedVectors.push(compZ);
+
+  // Obtengo la magnitud real de cada componente, para poder visualizarla
+  // https://mathinsight.org/media/image/image/dot_product_projection.png
+  // Una magnitud negativa significa que tengo que activar el solenoide opuesto
+  const lengthX = hitVector.dot(xAxis); // Magnitud real de la componente X
+  const lengthY = hitVector.dot(yAxis); // Magnitud real de la componente Y
+  const lengthZ = hitVector.dot(zAxis); // Magnitud real de la componente Z
+
+  // Visualizo las componentes/
+  visualizeComponent(compX, lengthX, 0xd43fbe);
+  visualizeComponent(compY, lengthY, 0xd43fbe);
+  visualizeComponent(compZ, lengthZ, 0xd43fbe);
+
+  // Fuerzo el redibujado, por si estaba parado el renderer
+  renderer.render(scene, camera);
+}
+
+
 
 )=====";

@@ -8,18 +8,23 @@
 #include <math.h>
 #include "StaticWebs.h"
 
-//Solenoides
+
+// Pines de control del solenoide 1 Top
+#define aENA 27
+#define aIN1 12
+#define aIN2 14
+
+// Pines de control del solenoide 2 Inf
+#define aENB 13
+#define aIN3 25
+#define aIN4 26
+
 #define MOTOR_T 12 //Top
 #define MOTOR_I 13  //Inf
 #define MOTOR_N 14  //Norte
 #define MOTOR_S 15 //Sur
 #define MOTOR_E 16//Este
 #define MOTOR_O 17//Oeste
-
-const int intensidad = 0;
-const int pwmFrequency = 5000; // Frecuencia PWM en Hz
-const int pwmResolution = 8; // Resolución PWM en bits (0-255)
-
 
 // Create an Event Source on /events
 AsyncEventSource events("/events");
@@ -28,7 +33,7 @@ AsyncEventSource events("/events");
 JSONVar readings;
 
 // Timer variables
-unsigned long lastTime = 0;  
+unsigned long lastTime = 0;     
 unsigned long lastTimeAcc = 0;
 unsigned long gyroDelay = 10;
 unsigned long accelerometerDelay = 200;
@@ -55,6 +60,8 @@ const char* password = "haptiball";
 const char* ssid = "MIWIFI_xHdm";       
 const char* password = "aQrrvrMn";
 */
+  
+
 sensors_event_t a, g, temp;
 
 void setup(void) {
@@ -76,7 +83,7 @@ void setup(void) {
 
   WiFi.mode(WIFI_STA);                  
   WiFi.begin(ssid, password);
-   
+    
   Serial.print("Connecting to ");
   Serial.println(ssid);
   delay(1000);                     
@@ -88,41 +95,31 @@ void setup(void) {
   Serial.print("Your Local IP address is: ");
   Serial.println(WiFi.localIP());      
 
+  pinMode(aENA, OUTPUT);
+  pinMode(aIN1, OUTPUT);
+  pinMode(aIN2, LOW); // Asegura que IN2 empieza en LOW, para evitar que el solenoide se active al inicio
 
-//SETUP DE MOTORES
-// Configuración del canal PWM
-// Asignación del canal PWM al pin del solenoide
- ledcAttach(MOTOR_T, pwmFrequency,pwmResolution);
- ledcAttach(MOTOR_I, pwmFrequency,pwmResolution);
- /*
- ledcAttach(MOTOR_N, pwmFrequency,pwmResolution);
- ledcAttach(MOTOR_S, pwmFrequency,pwmResolution);
- ledcAttach(MOTOR_E, pwmFrequency,pwmResolution);
- ledcAttach(MOTOR_O, pwmFrequency,pwmResolution);*/
+  pinMode(aENB, OUTPUT);
+  pinMode(aIN3, OUTPUT);
+  pinMode(aIN4, LOW); // Asegura que IN2 empieza en LOW, para evitar que el solenoide se active al inicio
 
 
   //motor superior accionado
   server.on("/Sup", HTTP_GET, [](AsyncWebServerRequest *request){
       if (request->hasParam("number")) {
             String number = request->getParam("number")->value();
-            Serial.println("Solenoide superior activado con potencia: " + number);
             int valor = number.toInt();
-            
             //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_T, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_T, 255);
-              delay(150);
-              ledcWrite(MOTOR_T, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_T,0,255,duration);
-              ledcWrite(MOTOR_T, 0);
-            }
+            int power = calcularPotencia(valor);
+            Serial.println("Solenoide superior activado con potencia: " + String(power));
+            digitalWrite(aIN1, HIGH);
+            digitalWrite(aIN2, LOW);
+            analogWrite(aENA, power);
+            delay(150);
+            // Desactivar el solenoide
+            // ambos pines en LOW significa que el solenoide está desactivado
+            digitalWrite(aIN1, LOW);
+            digitalWrite(aIN2, LOW);
 
             request->send(200, "text/plain", "OK");
       }
@@ -136,25 +133,18 @@ void setup(void) {
   server.on("/Inf", HTTP_GET, [](AsyncWebServerRequest *request){
       if (request->hasParam("number")) {
             String number = request->getParam("number")->value();
-            Serial.println("Solenoide inferior activado con potencia: " + number);
             int valor = number.toInt();
-
             //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_I, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_I, 255);
-              delay(150);
-              ledcWrite(MOTOR_I, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_I,0,255,duration);
-              ledcWrite(MOTOR_I, 0);
-            }
-
+            int power = calcularPotencia(valor);
+            Serial.println("Solenoide inferior activado con potencia: " + String(power));
+            digitalWrite(aIN3, HIGH);
+            digitalWrite(aIN4, LOW);
+            analogWrite(aENB, power);
+            delay(150);
+            // Desactivar el solenoide
+            // ambos pines en LOW significa que el solenoide está desactivado
+            digitalWrite(aIN3, LOW);
+            digitalWrite(aIN4, LOW);
             request->send(200, "text/plain", "OK");
       }
       else{
@@ -167,25 +157,10 @@ void setup(void) {
   server.on("/mNorte", HTTP_GET, [](AsyncWebServerRequest *request){
       if (request->hasParam("number")) {
             String number = request->getParam("number")->value();
-            Serial.println("Solenoide norte activado con potencia: " + number);
             int valor = number.toInt();
-
-             //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_I, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_I, 255);
-              delay(150);
-              ledcWrite(MOTOR_I, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_I,0,255,duration);
-              ledcWrite(MOTOR_I, 0);
-            }
-
+            int power = calcularPotencia(valor);
+            Serial.println("Solenoide norte activado con potencia: " + String(power));
+            //Incluir pines correspondientes
             request->send(200, "text/plain", "OK");
       }
       else{
@@ -197,25 +172,10 @@ void setup(void) {
   server.on("/mSur", HTTP_GET, [](AsyncWebServerRequest *request){
       if (request->hasParam("number")) {
             String number = request->getParam("number")->value();
-            Serial.println("Solenoide sur activado con potencia: " + number);
             int valor = number.toInt();
-
-             //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_I, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_I, 255);
-              delay(150);
-              ledcWrite(MOTOR_I, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_I,0,255,duration);
-              ledcWrite(MOTOR_I, 0);
-            }
-
+            int power = calcularPotencia(valor);
+            Serial.println("Solenoide sur activado con potencia: " + String(power));        
+            //Incluir pines correspondientes
             request->send(200, "text/plain", "OK");
       }
       else{
@@ -227,25 +187,10 @@ void setup(void) {
   server.on("/mEste", HTTP_GET, [](AsyncWebServerRequest *request){
       if (request->hasParam("number")) {
             String number = request->getParam("number")->value();
-            Serial.println("Solenoide este activado con potencia: " + number);
             int valor = number.toInt();
-
-             //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_I, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_I, 255);
-              delay(150);
-              ledcWrite(MOTOR_I, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_I,0,255,duration);
-              ledcWrite(MOTOR_I, 0);
-            }
-
+            int power = calcularPotencia(valor);
+            Serial.println("Solenoide este activado con potencia: " + String(power));
+            //Incluir pines correspondientes
             request->send(200, "text/plain", "OK");
       }
       else{
@@ -257,25 +202,10 @@ void setup(void) {
   server.on("/mOeste", HTTP_GET, [](AsyncWebServerRequest *request){
     if (request->hasParam("number")) {
           String number = request->getParam("number")->value();
-          Serial.println("Solenoide oeste activado con potencia: " + number);
           int valor = number.toInt();
-
-           //Calculamos la intensidad dado el valor
-            int duration = calcularLedcFadeDuration(valor);
-            if(duration == 0){
-              ledcWrite(MOTOR_I, 0);
-            }
-            else if (duration == 10){
-              ledcWrite(MOTOR_I, 255);
-              delay(150);
-              ledcWrite(MOTOR_I, 0);
-            }
-            else{
-              //Activamos el motor
-              ledcFade(MOTOR_I,0,255,duration);
-              ledcWrite(MOTOR_I, 0);
-            }
-
+          int power = calcularPotencia(valor);
+          Serial.println("Solenoide oeste activado con potencia: " + String(power));
+          //Incluir pines correspondientes
           request->send(200, "text/plain", "OK");
     }
     else{
@@ -284,36 +214,100 @@ void setup(void) {
     }
 });
 
-  //LAUNCH 
-  server.on("/launch", HTTP_GET, [](AsyncWebServerRequest *request){
-    int values[5] = {0};
-      if (request->hasParam("values")) {
-        for (int i = 0; i < 5; i++) {
-              String paramName = "v" + String(i);
-              if (request->hasParam(paramName)) {
-                values[i] = request->getParam(paramName)->value().toInt();
-              }
-            }
-           // Imprimir los valores recibidos - LOS MANDAMOS A LOS MOTORES CORRESPONDIENTES [sup,inf,norte,sur,este,oeste];
-        for (int i = 0; i < 5; i++) {
-          Serial.print("v");
-          Serial.print(i);
-          Serial.print(": ");
-          Serial.println(values[i]);
-        }
-        ledcFade(MOTOR_T,0,255,values[0]);
-        ledcFade(MOTOR_I,0,255,values[1]);
-        ledcFade(MOTOR_N,0,255,values[2]);
-        ledcFade(MOTOR_S,0,255,values[3]);
-        ledcFade(MOTOR_E,0,255,values[4]);
-        ledcFade(MOTOR_O,0,255,values[5]);
+//LAUNCH
+server.on("/launch", HTTP_GET, [](AsyncWebServerRequest *request){
+  int values[6] = {0}; 
+  String valorParam;
 
-      }
-      else{
-        request->send(200, "text/plain", "ERROR: No number recieved");
+  if (request->hasParam("values")) {
+    valorParam = request->getParam("values")->value(); 
 
+    // Dividimos la cadena en los valores individuales
+    int lastIndex = 0;
+    for (int i = 0; i < 6; i++) {
+      int commaIndex = valorParam.indexOf(',', lastIndex);
+      if (commaIndex == -1) { // Si es el último valor (sin coma al final)
+        commaIndex = valorParam.length();
       }
-  });
+      String valueString = valorParam.substring(lastIndex, commaIndex);
+      values[i] = calcularPotencia(valueString.toInt()); // Convertimos y calculamos
+
+      lastIndex = commaIndex + 1; // Movemos al siguiente valor
+    }
+      //ACTIVAR MOTORES NORMALMENTE
+      //activateMotors(values);
+      Serial.println("***** LAUNCH*****");
+      for (int i = 0; i < 6; i++) {
+        Serial.println("Solenoide " + String(i) + " activado con el valor " + String(values[i]));
+     
+    }
+
+    request->send(200, "text/plain", "OK");
+  } else {
+    request->send(400, "text/plain", "ERROR: No values received");
+  }
+});
+
+
+//Custom launch
+server.on("/customLaunch", HTTP_GET, [](AsyncWebServerRequest *request){
+  int values[6] = {0}; 
+  String valorParam;
+  int actTime;
+  int waitTime;
+  int repsInput;
+    if (request->hasParam("actTime")) {
+    Serial.println("actTime parameter received");
+    Serial.println(request->getParam("actTime")->value()); 
+    actTime = request->getParam("actTime")->value().toInt(); 
+  }
+
+  if (request->hasParam("waitTime")) {
+    Serial.println("waitTime parameter received");
+    Serial.println(request->getParam("waitTime")->value()); 
+    waitTime = request->getParam("waitTime")->value().toInt(); 
+  }
+
+  if (request->hasParam("repsInput")) {
+    Serial.println("repsInput parameter received");
+    Serial.println(request->getParam("repsInput")->value()); 
+    repsInput = request->getParam("repsInput")->value().toInt(); 
+  }
+  if (request->hasParam("values")) {
+    valorParam = request->getParam("values")->value(); 
+    Serial.println(request->getParam("values")->value()); 
+    // Dividimos la cadena en los valores individuales
+    int lastIndex = 0;
+    for (int i = 0; i < 6; i++) {
+      int commaIndex = valorParam.indexOf(',', lastIndex);
+      if (commaIndex == -1) { // Si es el último valor (sin coma al final)
+        commaIndex = valorParam.length();
+      }
+      String valueString = valorParam.substring(lastIndex, commaIndex);
+      values[i] = calcularPotencia(valueString.toInt()); // Convertimos y calculamos
+
+      lastIndex = commaIndex + 1; // Movemos al siguiente valor
+    }
+
+    // ACTIVAR MOTORES CON CUSTOM HIT
+    //activateMotorsCustomHit(values,repsInput,waitTime,actTime);
+    for (int r = 0; r < repsInput; r++) {
+      Serial.println("*****CUSTOM LAUNCH*****");
+      for (int i = 0; i < 6; i++) {
+        Serial.println("Solenoide " + String(i) + " activado con el valor " + String(values[i]));
+        delay(actTime);
+        Serial.println("timeActivated:"+String(actTime));
+    }
+    delay(waitTime);
+    Serial.println("delay:"+String(waitTime));
+    
+
+    }
+    request->send(200, "text/plain", "OK");
+  } else {
+    request->send(400, "text/plain", "ERROR: No values received");
+  }
+});
 
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -329,7 +323,7 @@ void setup(void) {
   });
 
   server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", "<!DOCTYPE html><html />");
+    request->send_P(200, "text/html", "<!DOCTYPE <html></html>");
   });
 
   server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -434,6 +428,21 @@ String getAccelerometer() {
   return accString;
 }
 
+int calcularPotencia(int valor){
+  if (valor==0){
+    return 0;
+  }
+  else if (valor==10){
+    return 255;
+  }
+  else{
+    int res;
+    return res = round(11.11 * (valor - 1) + 155);
+    
+  }
+
+}
+
 int calcularLedcFadeDuration(int valor){
   if (valor==0){
     return 0;
@@ -446,6 +455,174 @@ int calcularLedcFadeDuration(int valor){
     return res = 2000-((1500*(valor-1)/9));
   }
 
+}
+
+void activateMotors(int values[]){
+
+   // Motor 1
+   /*
+  if (values[0] > 0) {
+    digitalWrite(aIN1, HIGH);
+    digitalWrite(aIN2, LOW);
+    analogWrite(aENB1, values[0]);
+  } else {
+    digitalWrite(aIN1, LOW);
+    digitalWrite(aIN2, LOW);
+  }
+
+  // Motor 2
+  if (values[1] > 0) {
+    digitalWrite(aIN3, HIGH);
+    digitalWrite(aIN4, LOW);
+    analogWrite(aENB2, values[1]);
+  } else {
+    digitalWrite(aIN3, LOW);
+    digitalWrite(aIN4, LOW);
+  }
+
+  // Motor 3
+  if (values[2] > 0) {
+    digitalWrite(aIN5, HIGH);
+    digitalWrite(aIN6, LOW);
+    analogWrite(aENB3, values[2]);
+  } else {
+    digitalWrite(aIN5, LOW);
+    digitalWrite(aIN6, LOW);
+  }
+
+  // Motor 4
+  if (values[3] > 0) {
+    digitalWrite(aIN7, HIGH);
+    digitalWrite(aIN8, LOW);
+    analogWrite(aENB4, values[3]);
+  } else {
+    digitalWrite(aIN7, LOW);
+    digitalWrite(aIN8, LOW);
+  }
+
+  // Motor 5
+  if (values[4] > 0) {
+    digitalWrite(aIN9, HIGH);
+    digitalWrite(aIN10, LOW);
+    analogWrite(aENB5, values[4]);
+  } else {
+    digitalWrite(aIN9, LOW);
+    digitalWrite(aIN10, LOW);
+  }
+
+  // Motor 6
+  if (values[5] > 0) {
+    digitalWrite(aIN11, HIGH);
+    digitalWrite(aIN12, LOW);
+    analogWrite(aENB6, values[5]);
+  } else {
+    digitalWrite(aIN11, LOW);
+    digitalWrite(aIN12, LOW);
+  }
+
+  // Esperar 150 ms
+  delay(150);
+
+  // Desactivar todos los motores
+  digitalWrite(aIN1, LOW);
+  digitalWrite(aIN2, LOW);
+  digitalWrite(aIN3, LOW);
+  digitalWrite(aIN4, LOW);
+  digitalWrite(aIN5, LOW);
+  digitalWrite(aIN6, LOW);
+  digitalWrite(aIN7, LOW);
+  digitalWrite(aIN8, LOW);
+  digitalWrite(aIN9, LOW);
+  digitalWrite(aIN10, LOW);
+  digitalWrite(aIN11, LOW);
+  digitalWrite(aIN12, LOW);
+}
+*/
+}
+
+void activateMotorsCustomHit(int values[],int waitTime,int actTime,int reps){
+   /*for (int r = 0; r < reps; r++) {
+ 
+    // Motor 1
+    if (values[0] > 0) {
+      digitalWrite(aIN1, HIGH);
+      digitalWrite(aIN2, LOW);
+      analogWrite(aENB1, values[0]);
+    } else {
+      digitalWrite(aIN1, LOW);
+      digitalWrite(aIN2, LOW);
+    }
+
+    // Motor 2
+    if (values[1] > 0) {
+      digitalWrite(aIN3, HIGH);
+      digitalWrite(aIN4, LOW);
+      analogWrite(aENB2, values[1]);
+    } else {
+      digitalWrite(aIN3, LOW);
+      digitalWrite(aIN4, LOW);
+    }
+
+    // Motor 3
+    if (values[2] > 0) {
+      digitalWrite(aIN5, HIGH);
+      digitalWrite(aIN6, LOW);
+      analogWrite(aENB3, values[2]);
+    } else {
+      digitalWrite(aIN5, LOW);
+      digitalWrite(aIN6, LOW);
+    }
+
+    // Motor 4
+    if (values[3] > 0) {
+      digitalWrite(aIN7, HIGH);
+      digitalWrite(aIN8, LOW);
+      analogWrite(aENB4, values[3]);
+    } else {
+      digitalWrite(aIN7, LOW);
+      digitalWrite(aIN8, LOW);
+    }
+
+    // Motor 5
+    if (values[4] > 0) {
+      digitalWrite(aIN9, HIGH);
+      digitalWrite(aIN10, LOW);
+      analogWrite(aENB5, values[4]);
+    } else {
+      digitalWrite(aIN9, LOW);
+      digitalWrite(aIN10, LOW);
+    }
+
+    // Motor 6
+    if (values[5] > 0) {
+      digitalWrite(aIN11, HIGH);
+      digitalWrite(aIN12, LOW);
+      analogWrite(aENB6, values[5]);
+    } else {
+      digitalWrite(aIN11, LOW);
+      digitalWrite(aIN12, LOW);
+    }
+
+    // Esperar el tiempo de activación
+    delay(actTime);
+
+    // Desactivar todos los motores
+    digitalWrite(aIN1, LOW);
+    digitalWrite(aIN2, LOW);
+    digitalWrite(aIN3, LOW);
+    digitalWrite(aIN4, LOW);
+    digitalWrite(aIN5, LOW);
+    digitalWrite(aIN6, LOW);
+    digitalWrite(aIN7, LOW);
+    digitalWrite(aIN8, LOW);
+    digitalWrite(aIN9, LOW);
+    digitalWrite(aIN10, LOW);
+    digitalWrite(aIN11, LOW);
+    digitalWrite(aIN12, LOW);
+
+    // Esperar el tiempo entre repeticiones
+    delay(waitTime);
+  }*/
 }
 
 

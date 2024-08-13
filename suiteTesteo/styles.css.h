@@ -10,7 +10,7 @@ html {
   body {
     margin: 0;
   }
-  .topnav {
+  .banner {
     overflow: hidden;
     background-color: rgb(28, 169, 235);
     color:rgb(252, 252, 252);
@@ -67,7 +67,7 @@ html {
     height: 300px; margin: auto;
     padding-top:2%;
   }
-  #reset,#updateHitVector,#launch{
+  #reset,#updateHitVector,#launch,#hitBtn{
     border: none;
     color: #f7f3f3;
     font-weight: bold;
