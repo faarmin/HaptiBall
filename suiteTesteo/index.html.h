@@ -3,7 +3,7 @@ R"=====(
 <html>
 
 <head>
-    <title>Testing Suite</title>>
+    <title>Testing Suite</title>
     <link rel="stylesheet" href="styles.css">
      <!--  <script src="threejs.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
@@ -23,7 +23,7 @@ R"=====(
         </div></BR></BR></BR></BR>
         <div class="cards">
             <div class="card">
-                <p class="card-title">GYRO</p>
+                <p class="card-title">GYRO</BR>(Angular displacement)</p>
                 <p><span class="reading">X: <span id="gyroX"></span> rad</span></p>
                 <p><span class="reading">Y: <span id="gyroY"></span> rad</span></p>
                 <p><span class="reading">Z: <span id="gyroZ"></span> rad</span></p>
@@ -33,14 +33,14 @@ R"=====(
                 <p><span class="reading">Z: <span id="accZ"></span> ms<sup>2</sup></span></p>
             </div>
             <div class="card">
-                <p class="card-title">ANGULAR ROTATION</p>
+                <p class="card-title">COMPLEMENTARY FILTER</p>
                 <p>
-                    <span class="reading">X: <span id="angX"></span> grados </span>
-                    <span class="reading">-><span id="angXrad"></span> radianes</span>
+                    <span class="reading">PITCH:</BR> <span id="angX"></span> grados </span></BR>
+                    <span class="reading"><span id="angXrad"></span> radianes</span>
                 </p>
                 <p>
-                    <span class="reading">Y: <span id="angY"></span> grados </sup></span>
-                    <span class="reading">-><span id="angYrad"></span> radianes</sup></span>
+                    <span class="reading">ROLL:</BR> <span id="angY"></span> grados </sup></span></BR>
+                    <span class="reading"><span id="angYrad"></span> radianes</sup></span>
                 </p>
                   </BR></BR>
                 <button id="reset">RESET POSITION </button>
@@ -49,9 +49,9 @@ R"=====(
               <div class="card">
                   <p class="card-title">CUSTOM HIT</p>
                   ACTIVATE <input type="checkbox" id="configureHit"></br></br>
-                  Repetitions:<input type="number" id="reps" length="2" value="3" /> </br></br>
-                  Active time:<input type="number" id="actTime" length="3" value="30" /> </br></br>
-                  Time between hits:<input type="number" id="waitTime" length="2" value="50" /> </br>
+                  Repetitions:</br><input type="number" id="reps" length="2" value="3" /> </br></br>
+                  Active time:</br><input type="number" id="actTime" length="3" value="30" /> </br></br>
+                  Time between hits:</br><input type="number" id="waitTime" length="2" value="50" /> </br>
             </div>
             <div class="card">
                 <p class="card-title">IMPACT VECTOR</p>

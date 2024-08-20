@@ -35,6 +35,7 @@ var numHitX,
   hitX,
   hitY,
   hitZ;
+var magX, magY, magZ;
 //Checks 
 var fibonacciAct, 
   regAct, 
@@ -131,7 +132,6 @@ function createSceneJS(){
   renderer.render(scene, camera);
 
 
-    console.log('Sale createSceneJS');
 }
 
 // Ajuste de tamaño responsive
@@ -147,7 +147,7 @@ function onWindowResize(){
 function resetPosition(){
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "/reset", true);
-    console.log();
+    console.log('Reset');
     xhr.send();
 }
 
@@ -213,9 +213,6 @@ numHitX = document.getElementById("numHitX");
 numHitY = document.getElementById("numHitY");
 numHitZ = document.getElementById("numHitZ");
 
-repsInput = document.getElementById("reps").value;
-waitTime = document.getElementById("waitTime").value;
-actTime = document.getElementById("actTime").value;
 
 hitX.oninput = function () {
   const n = parseInt(this.value);
@@ -274,7 +271,7 @@ document.getElementById('myCheckbox').addEventListener('change', function() {
     if(fibonacciAct){
       distributePointsOnSphere(6);
     }   
-    console.log('Checkbox activado:', fibonacciAct);
+    console.log('Checkbox Fibonacci activado:', fibonacciAct);
 });
 
 document.getElementById('myCheckbox2').addEventListener('change', function() {
@@ -284,13 +281,13 @@ document.getElementById('myCheckbox2').addEventListener('change', function() {
     if (regAct){
       createVectors();
     }
-    console.log('Checkbox activado:', regAct);
+    console.log('Checkbox Regular distribution activado:', regAct);
 
 });
 
 document.getElementById('configureHit').addEventListener('change', function() {
     configureHit = this.checked;
-    console.log('Checkbox activado:', configureHit);
+    console.log('Checkbox Custom Hit activado:', configureHit);
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -339,7 +336,7 @@ if (!!window.EventSource) {
     document.getElementById("gyroY").innerHTML = obj.gyroY;
     document.getElementById("gyroZ").innerHTML = obj.gyroZ;
 
-    // Change sphere rotation after receiving the readinds
+    // Change sphere rotation 
     sphere.rotation.x = obj.gyroY;
     sphere.rotation.y = obj.gyroZ;
     sphere.rotation.z = obj.gyroX;
@@ -488,20 +485,28 @@ function accionarMotorX(motor){
           number = numPower6.textContent;
           break;
   }
-  xhr.open("GET", "/"+motor+ "?number=" + number, true);
-  console.log(motor+number);
+
+  if(configureHit){
+    repsInput = document.getElementById("reps").value;
+    waitTime = document.getElementById("waitTime").value;
+    actTime = document.getElementById("actTime").value;
+
+    console.log("WAITTIME: "+waitTime+" ACTTIME: "+actTime+ " REPETITIONS: "+repsInput);
+    xhr.open("GET", "/"+motor+ "?number=" + number + "&actTime=" + actTime + "&waitTime=" + waitTime + "&repsInput=" + repsInput, true);
+  }
+  else{
+    xhr.open("GET", "/"+motor+ "?number=" + number, true);
+    console.log(motor+number);
+  }
   xhr.send();
 }
 
 
-
-//**********************************PRUEBAS******************************************************
-
- 
 function activateMotores(){
-    const valX = parseInt(hitX.value);
-    const valY = parseInt(hitY.value);
-    const valZ = parseInt(hitZ.value);
+    hitDecomposition();
+    const valX = magX*(-1);
+    const valY = magY*(-1);
+    const valZ = magZ*(-1);
     let  sup = 0;
     let  inf= 0;
     let  norte= 0;
@@ -534,6 +539,9 @@ function activateMotores(){
       console.log(values);
 
     if(configureHit){
+      repsInput = document.getElementById("reps").value;
+      waitTime = document.getElementById("waitTime").value;
+      actTime = document.getElementById("actTime").value;
       //launch con periodicidad
       console.log("WAITTIME: "+waitTime+" ACTTIME: "+actTime+ " REPETITIONS: "+repsInput);
       xhr.open("GET", "/customLaunch?values=" + values + "&actTime=" + actTime + "&waitTime=" + waitTime + "&repsInput=" + repsInput, true);
@@ -548,11 +556,8 @@ function activateMotores(){
 
 function hideVectors() {
     decomposedVectors.forEach(vector => {
-        vector.visible = false;
-        vector.opacity = 0;
         scene.remove(vector); 
     });
-    console.log(decomposedVectors+"eliminados");
     decomposedVectors = [];
     renderer.render(scene, camera);
 }
@@ -590,7 +595,7 @@ function hitDecomposition() {
       0.1 // Tamaño de la cabeza
     );
     scene.add(arrowHelper);
-    console.log(decomposedVectors+"+1");
+    decomposedVectors.push(arrowHelper); 
   }
 
   // Obtengo la "world matrix" del solenoidsAxesHelper, la necesitaré para usarlo como base de la decomposición
@@ -620,9 +625,7 @@ function hitDecomposition() {
   let compX = hitVector.clone().projectOnVector(xAxis);
   let compY = hitVector.clone().projectOnVector(yAxis);
   let compZ = hitVector.clone().projectOnVector(zAxis);
-  decomposedVectors.push(compX);
-  decomposedVectors.push(compY);
-  decomposedVectors.push(compZ);
+ 
 
   // Obtengo la magnitud real de cada componente, para poder visualizarla
   // https://mathinsight.org/media/image/image/dot_product_projection.png
@@ -630,6 +633,10 @@ function hitDecomposition() {
   const lengthX = hitVector.dot(xAxis); // Magnitud real de la componente X
   const lengthY = hitVector.dot(yAxis); // Magnitud real de la componente Y
   const lengthZ = hitVector.dot(zAxis); // Magnitud real de la componente Z
+  magX=lengthX;
+  magY=lengthY;
+  magZ=lengthZ;
+  console.log("Lengths [X: "+lengthX+" Y: "+lengthY+" Z: "+lengthZ+" ]");
 
   // Visualizo las componentes/
   visualizeComponent(compX, lengthX, 0xd43fbe);
