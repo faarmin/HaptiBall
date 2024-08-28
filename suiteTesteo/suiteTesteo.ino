@@ -6,7 +6,7 @@
 #include <Arduino_JSON.h>
 #include <math.h>
 #include "StaticWebs.h"
-#include <esp_now.h>
+
 
 // ESTRUCTURA PINES INDIVIDUALES
 #define IN1a 12
@@ -75,14 +75,14 @@ AsyncWebServer server(80);
 
 Adafruit_MPU6050 mpu;
 
-/*
+
 const char* ssid = "hotspotesp32";       
 const char* password = "haptiball";
-*/
 
+/*
 const char* ssid = "MIWIFI_xHdm";       
 const char* password = "aQrrvrMn";
-
+*/
 sensors_event_t a, g, temp;
 
 void setup(void) {
@@ -344,7 +344,7 @@ void setup(void) {
       }
   });
 
-  server.on("/mOeste", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/  ", HTTP_GET, [](AsyncWebServerRequest *request){
     if (request->hasParam("number")) {
           int actTime;
           int waitTime;
