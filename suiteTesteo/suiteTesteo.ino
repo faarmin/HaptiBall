@@ -75,14 +75,14 @@ AsyncWebServer server(80);
 
 Adafruit_MPU6050 mpu;
 
-
+/*
 const char* ssid = "hotspotesp32";       
 const char* password = "haptiball";
+*/
 
-/*
 const char* ssid = "MIWIFI_xHdm";       
 const char* password = "aQrrvrMn";
-*/
+
 sensors_event_t a, g, temp;
 
 void setup(void) {
@@ -344,7 +344,7 @@ void setup(void) {
       }
   });
 
-  server.on("/  ", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/mOeste", HTTP_GET, [](AsyncWebServerRequest *request){
     if (request->hasParam("number")) {
           int actTime;
           int waitTime;

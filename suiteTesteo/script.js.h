@@ -68,17 +68,10 @@ function createSceneJS(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color("black");
 
-  camera = new THREE.PerspectiveCamera(
-    75,
-    parentWidth(document.getElementById("3Dcube")) /
-      parentHeight(document.getElementById("3Dcube")),
-    0.1,
-    1000
-  );
 
    // Iñigo: Reemplazo la camara por una ortográfica
-  let width = parentWidth(document.getElementById("3Dcube"));
-  let height = parentHeight(document.getElementById("3Dcube"));
+  let width = parentWidth(document.getElementById("3Dsphere"));
+  let height = parentHeight(document.getElementById("3Dsphere"));
   let sizeRatio = width / height; // mantengo el ratio de aspecto que tenia en pantalla
   let desiredWith = 30;
   camera = new THREE.OrthographicCamera(
@@ -90,9 +83,9 @@ function createSceneJS(){
     1000
   );
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(parentWidth(document.getElementById("3Dcube")), parentHeight(document.getElementById("3Dcube")));
+    renderer.setSize(parentWidth(document.getElementById("3Dsphere")), parentHeight(document.getElementById("3Dsphere")));
 
-    document.getElementById('3Dcube').appendChild(renderer.domElement);
+    document.getElementById('3Dsphere').appendChild(renderer.domElement);
     // Iñigo: añado orbit controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.update();
@@ -100,7 +93,7 @@ function createSceneJS(){
     // Crear la geometría
     const sphereGeometry = new THREE.SphereGeometry(2.5, 32, 32);
     const sphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0x8a8bed, // Iñigo: Cambio el color de la esfera a uno mas sauve que permita ver los ejes de su interior
+      color: 0x8a8bed, 
       wireframe: true,
       opacity: 0.025,
       transparent: false,
@@ -137,9 +130,9 @@ function createSceneJS(){
 // Ajuste de tamaño responsive
 function onWindowResize(){
     console.log('WindowResize');
-    camera.aspect = parentWidth(document.getElementById("3Dcube")) / parentHeight(document.getElementById("3Dcube"));
+    camera.aspect = parentWidth(document.getElementById("3Dsphere")) / parentHeight(document.getElementById("3Dsphere"));
     camera.updateProjectionMatrix();
-    renderer.setSize(parentWidth(document.getElementById("3Dcube")), parentHeight(document.getElementById("3Dcube")));
+    renderer.setSize(parentWidth(document.getElementById("3Dsphere")), parentHeight(document.getElementById("3Dsphere")));
     
 }
 
@@ -523,16 +516,16 @@ function activateMotores(){
           inf = valY*(-1);
       }
       if (valX>0){
-          norte = valX;
+          este = valX;
       }
       else{
-          sur = valX*(-1);
+          oeste = valX*(-1);
       } 
       if (valZ>0){
-          este = valZ;
+          sur = valZ;
       }
       else{
-          oeste = valZ*(-1);
+          norte = valZ*(-1);
       } 
       values=[sup,inf,norte,sur,este,oeste];
 
@@ -592,7 +585,7 @@ function hitDecomposition() {
       Math.abs(length), // Longitud/magnitud. Siempre absoluta, queremos distancias positivas sea cual sea su dirección
       color, // Color
       0.2, // Tamaño de la cabeza
-      0.1 // Tamaño de la cabeza
+      0.1 // Tamaño de la cabe   za
     );
     scene.add(arrowHelper);
     decomposedVectors.push(arrowHelper); 

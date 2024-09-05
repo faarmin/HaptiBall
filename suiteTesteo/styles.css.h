@@ -60,7 +60,7 @@ html {
   .reading {
     font-size: 1.2rem;
   }
-  .cube-content{
+  .sphere-content{
     color: grey;
     width: 100%;
     background-color: white;

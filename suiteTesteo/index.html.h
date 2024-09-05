@@ -14,12 +14,12 @@ R"=====(
         <h1>Hapti-Ball Testing Suite</h1>
         <input type="checkbox" id="myCheckbox">
         <label for="myCheckbox">Fibonacci Lattice Distribution</label></br>
-        <input type="checkbox" id="myCheckbox2">
+        <input type="checkbox" id="myCheckbox2">  
         <label for="myCheckbox2">Regular Distribution</label></br>
     </div>
     <div class="content">
-            <div class="cube-content">
-            <div id="3Dcube"></div>
+            <div class="sphere-content">
+            <div id="3Dsphere"></div>
         </div></BR></BR></BR></BR>
         <div class="cards">
             <div class="card">
